@@ -9,6 +9,12 @@ import winsound
 
 import time
 
+# 
+import sys
+import torch
+print(f"Python version: {sys.version}, {sys.version_info} ")
+print(f"Pytorch version: {torch.__version__} ")
+
 # TKinter set up
 ## Window
 win = Tk()
@@ -48,8 +54,18 @@ dd.config(width=100)
 dd.place(relx=0.5, rely=0.01, anchor=CENTER)
 
 # OnnxRuntime set up
-w = "best.onnx"
-session = ort.InferenceSession(w, providers=['CPUExecutionProvider'])
+w = "best_0.65_0.62_640x640.onnx"
+providers = [
+    ('CUDAExecutionProvider', {
+        'device_id': 0,
+        'arena_extend_strategy': 'kNextPowerOfTwo',
+        'gpu_mem_limit': 2 * 1024 * 1024 * 1024,
+        'cudnn_conv_algo_search': 'EXHAUSTIVE',
+        'do_copy_in_default_stream': True,
+    }),
+    'CPUExecutionProvider',
+]
+session = ort.InferenceSession(w, providers=providers)
 
 # OpenCV set up
 cap = cv2.VideoCapture(0)
@@ -182,7 +198,7 @@ def show_frames():
     input_label.configure(image=imgtk)
 
     # Repeat after x ms
-    input_label.after(400, show_frames)
+    input_label.after(20, show_frames)
 
 show_frames()
 win.mainloop()
