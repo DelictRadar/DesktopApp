@@ -9,15 +9,18 @@ import winsound
 
 import time
 
-# 
 import sys
 import torch
 print(f"Python version: {sys.version}, {sys.version_info} ")
 print(f"Pytorch version: {torch.__version__} ")
 
+print_count = 0
+freeze_detection = 0
+
 # TKinter set up
 ## Window
 win = Tk()
+win['background'] = '#212832'
 win.title("DelictRadar")
 win.state("zoomed")
 
@@ -52,6 +55,8 @@ dd= OptionMenu(win, var, *device_index, command=change_device)
 dd.grid(row=0, column=0)
 dd.config(width=100)
 dd.place(relx=0.5, rely=0.01, anchor=CENTER)
+dd['background'] = '#212832'
+dd['foreground'] = 'white'
 
 # OnnxRuntime set up
 w = "best_0.65_0.62_640x640.onnx"
@@ -120,17 +125,26 @@ def show_detect(img):
 
     return resized
 
-def handle_detect():
+def handle_detect(ori_images):
     global pistol_detected
-    if pistol_detected:
+    global freeze_detection
+
+    if pistol_detected and freeze_detection == 0:
+        input_label.place(relx=0.6, rely=0.5, anchor=E)
+        detect_label.place(relx=0.6, rely=0.5, anchor=W)
+        dct_img = Image.fromarray(show_detect(ori_images[0]))
+        dct_imgtk = ImageTk.PhotoImage(image = dct_img)
+        detect_label.imgtk = dct_imgtk
+        detect_label.configure(image=dct_imgtk)
+
         input_label.config(highlightbackground="red", highlightthickness=5)
         winsound.PlaySound('./sounds/alert-2.wav', winsound.SND_ASYNC)
     else:
         input_label.config(highlightthickness=0)
 
 def show_frames():
+    start = time.time()
     global pistol_detected
-    pistol_detected = False
 
     _, frame = cap.read()
 
@@ -153,11 +167,23 @@ def show_frames():
 
     inp = {inname[0]:im}
 
-    start = time.time()
-    outputs = session.run(outname, inp)[0]
-    end = time.time()
+    global print_count
+    global freeze_detection
 
-    print(f'Inference Time %f', end - start)
+    outputs = []
+
+    inf_end = 0
+    inf_start = 0
+
+    if not pistol_detected or freeze_detection == 160:
+        inf_start = time.time()
+        outputs = session.run(outname, inp)[0]
+        inf_end = time.time()
+
+        pistol_detected = False
+        freeze_detection = 0
+    else:
+        freeze_detection += 1
 
     ori_images = [img.copy()]
  
@@ -182,22 +208,24 @@ def show_frames():
         else:
             cv2.putText(image,name,(box[0], box[1] + 20),cv2.FONT_HERSHEY_SIMPLEX,0.75,[225, 255, 255],thickness=2)  
 
-    handle_detect()
-    if pistol_detected:
-        input_label.place(relx=0.6, rely=0.5, anchor=E)
-        detect_label.place(relx=0.6, rely=0.5, anchor=W)
-        dct_img = Image.fromarray(show_detect(ori_images[0]))
-        dct_imgtk = ImageTk.PhotoImage(image = dct_img)
-        detect_label.imgtk = dct_imgtk
-        detect_label.configure(image=dct_imgtk)
+    handle_detect(ori_images)
 
-    # Convert imageo to PhotoImage
+    # Show real-time images
     inp_img = Image.fromarray(img)
     imgtk = ImageTk.PhotoImage(image = inp_img)
     input_label.imgtk = imgtk
     input_label.configure(image=imgtk)
 
     # Repeat after x ms
+    end = time.time()
+
+    if(print_count == 80):
+        print(f"Inference time:\t\t{round(inf_end - inf_start, 5)} sec")
+        print(f"Frame processing time:\t{round(end - start, 5)} sec\n")
+        print_count = 0
+    else:
+        print_count += 1
+
     input_label.after(20, show_frames)
 
 show_frames()
