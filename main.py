@@ -26,11 +26,11 @@ win.state("zoomed")
 
 ## Label of Video
 alert_border = Frame(win, background="red")
-input_label = Label(win)
+input_label = Label(win,  borderwidth=0)
 input_label.place(relx=0.5, rely=0.5, anchor=CENTER)
 
 ## Label of Detect
-detect_label = Label(win)
+detect_label = Label(win, borderwidth=0)
 
 ## Var for Dropdown
 var = StringVar(win)
@@ -57,6 +57,7 @@ dd.config(width=100)
 dd.place(relx=0.5, rely=0.01, anchor=CENTER)
 dd['background'] = '#212832'
 dd['foreground'] = 'white'
+dd["highlightthickness"]=0
 
 # OnnxRuntime set up
 w = "best_0.65_0.62_640x640.onnx"
@@ -138,9 +139,7 @@ def handle_detect(ori_images):
         detect_label.configure(image=dct_imgtk)
 
         input_label.config(highlightbackground="red", highlightthickness=5)
-        winsound.PlaySound('./sounds/alert-2.wav', winsound.SND_ASYNC)
-    else:
-        input_label.config(highlightthickness=0)
+        winsound.PlaySound('./sounds/alert-1.wav', winsound.SND_ASYNC)
 
 def show_frames():
     start = time.time()
@@ -175,13 +174,16 @@ def show_frames():
     inf_end = 0
     inf_start = 0
 
+    inf_start = time.time()
+    outputs = session.run(outname, inp)[0]
+    inf_end = time.time()
     if not pistol_detected or freeze_detection == 160:
-        inf_start = time.time()
-        outputs = session.run(outname, inp)[0]
-        inf_end = time.time()
 
         pistol_detected = False
         freeze_detection = 0
+        input_label.config(highlightthickness=0)
+        detect_label.place_forget()
+        input_label.place(relx=0.5, rely=0.5, anchor=CENTER)
     else:
         freeze_detection += 1
 
@@ -211,7 +213,7 @@ def show_frames():
     handle_detect(ori_images)
 
     # Show real-time images
-    inp_img = Image.fromarray(img)
+    inp_img = Image.fromarray(ori_images[0])
     imgtk = ImageTk.PhotoImage(image = inp_img)
     input_label.imgtk = imgtk
     input_label.configure(image=imgtk)
