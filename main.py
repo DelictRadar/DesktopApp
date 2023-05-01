@@ -3,9 +3,12 @@ import random
 import numpy as np
 import onnxruntime as ort
 from PIL import Image, ImageTk
-from tkinter import Tk, Label, StringVar, OptionMenu, Frame, CENTER, W, E
+from tkinter import Tk, Label, StringVar, OptionMenu, Frame, CENTER, W, E, Button
+import tkinter.font as TkFont
 import device
 import winsound
+
+from datetime import datetime
 
 import time
 
@@ -16,6 +19,7 @@ print(f"Pytorch version: {torch.__version__} ")
 
 print_count = 0
 freeze_detection = 0
+isRecording = False
 
 # TKinter set up
 ## Window
@@ -31,6 +35,21 @@ input_label.place(relx=0.5, rely=0.5, anchor=CENTER)
 
 ## Label of Detect
 detect_label = Label(win, borderwidth=0)
+
+## Button
+def stop_alert():
+    winsound.PlaySound('./assets/sounds/nosound.wav', 
+                       winsound.SND_PURGE + winsound.SND_ASYNC) 
+
+stop_button = Button(win,
+    bg="#044A59",
+    fg="white",
+    text="Cancelar Alerta",
+    borderwidth=0,
+    padx=10,
+    pady=5,
+    font=TkFont.Font(family="Roboto", weight="bold", size=20),
+    command=stop_alert)
 
 ## Var for Dropdown
 var = StringVar(win)
@@ -60,7 +79,7 @@ dd['foreground'] = 'white'
 dd["highlightthickness"]=0
 
 # OnnxRuntime set up
-w = "best_0.65_0.62_640x640.onnx"
+w = "./assets/best_0.65_0.62_640x640.onnx"
 providers = [
     ('CUDAExecutionProvider', {
         'device_id': 0,
@@ -107,11 +126,6 @@ def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=True, scaleu
 
 names = ['pistol']
 colors = {name:[random.randint(0, 255) for _ in range(3)] for i,name in enumerate(names)}
-#forcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
-
-# Se recortará la entrada de la webcam a 720x720
-
-#result = cv2.VideoWriter('./results/result.avi', forcc, 5.0, size)
 
 pistol_detected = False
 
@@ -126,20 +140,35 @@ def show_detect(img):
 
     return resized
 
-def handle_detect(ori_images):
+forcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+recording = any
+
+def handle_detect(ori_images, fr_width, fr_height):
     global pistol_detected
     global freeze_detection
+    global forcc
+    global recording
+    global isRecording
 
     if pistol_detected and freeze_detection == 0:
+        # Modiying the place of labels and buttons
         input_label.place(relx=0.6, rely=0.5, anchor=E)
         detect_label.place(relx=0.6, rely=0.5, anchor=W)
+        stop_button.place(relx=0.75, rely=0.9, anchor=W)
+
         dct_img = Image.fromarray(show_detect(ori_images[0]))
         dct_imgtk = ImageTk.PhotoImage(image = dct_img)
         detect_label.imgtk = dct_imgtk
         detect_label.configure(image=dct_imgtk)
 
         input_label.config(highlightbackground="red", highlightthickness=5)
-        winsound.PlaySound('./sounds/alert-1.wav', winsound.SND_ASYNC)
+        winsound.PlaySound('./assets/sounds/alert-1.wav', winsound.SND_ASYNC)
+
+         
+        isRecording = True
+        recordPath = './videos/' + datetime.today().strftime('%Y%m%d_%H%M%S')  + '.mp4'
+        recording = cv2.VideoWriter(recordPath, forcc, 15.0, (fr_width, 1000))
+
 
 def show_frames():
     start = time.time()
@@ -168,6 +197,8 @@ def show_frames():
 
     global print_count
     global freeze_detection
+    global recording
+    global isRecording
 
     outputs = []
 
@@ -177,15 +208,6 @@ def show_frames():
     inf_start = time.time()
     outputs = session.run(outname, inp)[0]
     inf_end = time.time()
-    if not pistol_detected or freeze_detection == 160:
-
-        pistol_detected = False
-        freeze_detection = 0
-        input_label.config(highlightthickness=0)
-        detect_label.place_forget()
-        input_label.place(relx=0.5, rely=0.5, anchor=CENTER)
-    else:
-        freeze_detection += 1
 
     ori_images = [img.copy()]
  
@@ -210,7 +232,22 @@ def show_frames():
         else:
             cv2.putText(image,name,(box[0], box[1] + 20),cv2.FONT_HERSHEY_SIMPLEX,0.75,[225, 255, 255],thickness=2)  
 
-    handle_detect(ori_images)
+    handle_detect(ori_images, int(cap.get(3)), int(cap.get(4)))
+
+    if not pistol_detected or freeze_detection == 160:
+        pistol_detected = False
+        freeze_detection = 0
+        input_label.config(highlightthickness=0)
+        detect_label.place_forget()
+        stop_button.place_forget()
+        input_label.place(relx=0.5, rely=0.5, anchor=CENTER)
+        if isRecording:
+            recording.release()
+            isRecording = False
+        
+    else:
+        recording.write(cv2.cvtColor(ori_images[0], cv2.COLOR_BGR2RGB))
+        freeze_detection += 1
 
     # Show real-time images
     inp_img = Image.fromarray(ori_images[0])
