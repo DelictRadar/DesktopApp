@@ -79,7 +79,7 @@ dd['foreground'] = 'white'
 dd["highlightthickness"]=0
 
 # OnnxRuntime set up
-w = "./assets/best_0.65_0.62_640x640.onnx"
+w = "./assets/best_0.65_0.75_640x640_v2.onnx"
 providers = [
     ('CUDAExecutionProvider', {
         'device_id': 0,
@@ -167,7 +167,7 @@ def handle_detect(ori_images, fr_width, fr_height):
          
         isRecording = True
         recordPath = './videos/' + datetime.today().strftime('%Y%m%d_%H%M%S')  + '.mp4'
-        recording = cv2.VideoWriter(recordPath, forcc, 15.0, (fr_width, 1000))
+        recording = cv2.VideoWriter(recordPath, forcc, 15.0, (fr_width, fr_height))
 
 
 def show_frames():
