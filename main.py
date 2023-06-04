@@ -74,7 +74,7 @@ dd['foreground'] = 'white'
 dd["highlightthickness"]=0
 
 # OnnxRuntime set up
-w = "../assets/model/model_0.65_0.75.onnx"
+w = "../assets/model_0.65_0.75.onnx"
 providers = [
     ('CUDAExecutionProvider', {
         'device_id': 0,
