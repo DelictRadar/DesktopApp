@@ -22,13 +22,16 @@ Descargue cuando en la sección **Procedimiento** se le pida que lo haga.
 ```
 DesktopApp\
 |_ assets\
+  |_ installation\
+  |_ model\
+  |_ sounds\
 |_ bin\
   |_ execute.bat
   |_ install.bat
 |_ .gitignore
 |_ main.py
 ```
-5. Lo siguiente que se realizará es descargar la tercera dependencia **ONNX** la cual descargará un archivo con extensión .onnx, este archivo deberá colocarse en la carpeta `assets`.
+5. Lo siguiente que se realizará es descargar la tercera dependencia **ONNX** la cual descargará un archivo con extensión .onnx, este archivo deberá colocarse en la carpeta `assets\model`.
 6. Cuando ya se haya instalado **Anaconda**, deberá digirse al directorio `bin` y ejecutar el archivo `install.bat`.
 
 ## Guía de usuario
