@@ -44,7 +44,7 @@ DesktopApp\
 |_ main.py
 ```
 
-4. Lo siguiente que se realizará es descargar la tercera dependencia **ONNX** la cual descargará un archivo con extensión `.onnx`, este archivo deberá colocarse en la carpeta `assets\`, la cual será creada en el paso siguiente
+4. Lo siguiente que se realizará es descargar la tercera dependencia **ONNX** la cual descargará un archivo con extensión `.onnx`, este archivo deberá colocarse en la carpeta `assets\`.
 5. Cuando ya se haya instalado **Anaconda**, deberá digirse al directorio `bin\` y ejecutar el archivo `install.bat`.
 6. Finalmente, la estructura de la carpeta resultante después de toda la instalación será la siguiente:
 
