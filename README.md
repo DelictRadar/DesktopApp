@@ -9,7 +9,7 @@
 Se listarán los requerimientos del sistema que la aplicación soporta y permiten que esta funcione correctamente.
 
 1. Windows 10/11
-2. Tarjeta gráfica NVIDIA
+2. Tarjeta gráfica NVIDIA, a partir de las serie 10
 
 ### Dependencias
 
