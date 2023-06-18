@@ -23,7 +23,7 @@ Descargue cuando en la sección **Procedimiento** se le pida que lo haga.
 
 1. Primero, se deberá descargar e instalar la dependencia **Anaconda**, con el objetivo que mientras se instale avancemos con los siguientes pasos.
 
-> Ejecute el instalador y solo avance en la instalación sin modificar las opciones que el instalador le recomienda.
+> Ejecute el instalador y solo avance en la instalación sin modificar las opciones que el instalador le recomienda. **Importante**, apuntar la ruta donde se instalará para el paso 8.
 
 2. Luego deberá clonar o descargar el repositorio, en esta guía se tomará el camino de la descarga. Para ello, se descargará la primera dependencia llamada **Aplicación**.
 
@@ -45,8 +45,17 @@ DesktopApp\
 ```
 
 4. Lo siguiente que se realizará es descargar la tercera dependencia **ONNX** la cual descargará un archivo con extensión `.onnx`, este archivo deberá colocarse en la carpeta `assets\`.
-5. Cuando ya se haya instalado **Anaconda**, deberá digirse al directorio `bin\` y ejecutar el archivo `install.bat`.
-6. Finalmente, la estructura de la carpeta resultante después de toda la instalación será la siguiente:
+6. Cuando ya se haya instalado **Anaconda**, se tendrá que modificar las variables de entorno. Para ello, deberá usar `CTRL + R` y en la ventana deberá copiar el siguiente comando
+```
+rundll32.exe sysdm.cpl,EditEnvironmentVariables
+```
+7. En la sección **Variables del sistema** busque la variable de entorno `PATH` y selecciónela. Haga clic en **Editar**. Si no eiste la variable de entorno `PATH` haga clic en **Nuevo**.
+8. En la ventana **Editar la variable del sistema** (o **Nueva variable del sistema**), debe añadir la ruta donde se encuentre la carpeta donde se instaló **Anaconda** y añadir también la ruta de la carpeta **Scripts** que se encuentra dentro de la misma ruta donde se instaló anaconda.
+> Por ejemplo, si se instaló anaconda en la siguiente ruta `C:\Users\test_\anaconda03` se tendrá que agregar las rutas **C:\Users\test_\anaconda03** y **C:\Users\test_\anaconda03\Scripts** a la variable **PATH**.
+9. Solamente quedaría dar clic al botón de **Aceptar** y cerrar las demás ventanas haciendo clic en **Aceptar**.
+10. Una vez configurada la variable de entorno deberá digirse al directorio `bin\` y ejecutar el archivo `install.bat`.
+> **IMPORTANTE**: Al ejecutar los archivos .bat aparecerá una ventana titulada **Windows protegió su PC** que evitará que se ejecute los binarios. Así que lo que deberá realizar es hacer clic al botón **Más información** y luego al botón **Ejecutar de todas formas**.
+11. Finalmente, la estructura de la carpeta resultante después de toda la instalación será la siguiente:
 
 ```
 DesktopApp\
