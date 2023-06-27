@@ -1,5 +1,6 @@
 # DesktopApp
-
+## Dataset en Roboflow
+El dataset se encuentra en la página Roboflow y se puede acceder desde el siguiente link [Dataset](https://universe.roboflow.com/tp-7amot/delictradargtav)
 ## Guía de instalación
 
 ---
