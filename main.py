@@ -71,7 +71,7 @@ dd= OptionMenu(win, var, *device_index, command=change_device)
 dd.grid(row=0, column=0)
 dd.config(width=100)
 dd.place(relx=0.5, rely=0.01, anchor=CENTER)
-dd['background'] = '#212832'
+dd['background'] = '#222222'
 dd['foreground'] = 'white'
 dd["highlightthickness"]=0
 dd['font'] 
