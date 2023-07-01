@@ -17,10 +17,12 @@ freeze_detection = 0
 isRecording = False
 
 # TKinter set up
+
 ## Window
 win = Tk()
-win['background'] = '#212832'
-win.title("DelictRadar")
+win['background'] = '#222222'
+win.iconbitmap("../assets/img/Sentinel.ico")
+win.title("SENTINEL")
 win.state("zoomed")
 
 ## Label of Video
@@ -72,17 +74,18 @@ dd.place(relx=0.5, rely=0.01, anchor=CENTER)
 dd['background'] = '#212832'
 dd['foreground'] = 'white'
 dd["highlightthickness"]=0
+dd['font'] 
 
 # OnnxRuntime set up
 w = "../assets/model_0.65_0.75.onnx"
 providers = [
-    ('CUDAExecutionProvider', {
-        'device_id': 0,
-        'arena_extend_strategy': 'kNextPowerOfTwo',
-        'gpu_mem_limit': 2 * 1024 * 1024 * 1024,
-        'cudnn_conv_algo_search': 'EXHAUSTIVE',
-        'do_copy_in_default_stream': True,
-    }),
+    #('CUDAExecutionProvider', {
+    #    'device_id': 0,
+    #    'arena_extend_strategy': 'kNextPowerOfTwo',
+    #    'gpu_mem_limit': 2 * 1024 * 1024 * 1024,
+    #    'cudnn_conv_algo_search': 'EXHAUSTIVE',
+    #    'do_copy_in_default_stream': True,
+    #}),
     'CPUExecutionProvider',
 ]
 session = ort.InferenceSession(w, providers=providers)
