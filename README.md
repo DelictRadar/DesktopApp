@@ -36,6 +36,7 @@ Descargue cuando en la sección **Procedimiento** se le pida que lo haga.
 ```
 DesktopApp\
 |_ assets\
+  |_ img\
   |_ installation\
   |_ sounds\
 |_ bin\
@@ -61,6 +62,7 @@ rundll32.exe sysdm.cpl,EditEnvironmentVariables
 ```
 DesktopApp\
 |_ assets\
+  |_ img\
   |_ installation\
   |_ sounds\
   |_ model_x.xx_x.xx.onnx
