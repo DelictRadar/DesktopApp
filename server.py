@@ -1,7 +1,6 @@
 import time
 import numpy as np
 import onnxruntime
-from multiprocessing import Pipe, Process
 import os
 import pickle
 import cv2
@@ -73,7 +72,7 @@ class ImageProcessor:
         output_data = self.session.run([self.output_name], {self.input_name: im})[0]
         inf_end = time.time()
 
-        print(inf_end - inf_start)
+        #print(inf_end - inf_start)
 
         ori_images = [img.copy()]
 
