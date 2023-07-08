@@ -2,7 +2,7 @@ import sys
 import time
 from PyQt6.QtCore import Qt, QTimer, QDateTime, QTime
 from PyQt6.QtGui import QPixmap, QIcon
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGridLayout, QScrollArea
 import cv2
 from PIL import Image
 from PIL.ImageQt import ImageQt
@@ -64,9 +64,26 @@ class MainWindow(QMainWindow):
         panel_layout = QVBoxLayout(panel_widget)
         panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         main_layout.addWidget(panel_widget, 3)
+        
+        self.scroll_area = QScrollArea(panel_widget)
+        self.scroll_area.setStyleSheet("background-color: #222222; border: none;")
+        self.scroll_area.setWidgetResizable(True)
+        panel_layout.addWidget(self.scroll_area)
+
+        self.image_section = QWidget(panel_widget)
+        self.image_section.setStyleSheet("background-color: #222222;")
+
+        self.image_grid = QGridLayout(self.image_section)
+        self.image_grid.setContentsMargins(60, 20, 20, 20)
+        self.image_grid.setHorizontalSpacing(20)
+        self.image_grid.setVerticalSpacing(20)
+        
+        self.scroll_area.setWidget(self.image_section)
+        
+        self.index_grid = 0
 
         self.panel_visible = True  # Variable para rastrear la visibilidad del panel
-        self.toggle_button = QPushButton("Imágenes", display_widget)
+        self.toggle_button = QPushButton("Mostrar/Ocultar Evidencias", display_widget)
         self.toggle_button.setStyleSheet("background-color: #3CC5A6; color: #FFFFFF; font-size: 16px;"
                                          "border-radius: 5px; padding: 5px;")
         self.toggle_button.clicked.connect(self.toggle_panel)
@@ -107,6 +124,19 @@ class MainWindow(QMainWindow):
             self.disableBorderRecording = False
             winsound.PlaySound('./assets/sounds/alert-1.wav', winsound.SND_ASYNC)
             self.record_evidence(rgb_image)
+            
+            # Agregar evidencia a la derecha
+            max_width = 250
+            max_height = 125
+            image_label = QLabel(self.image_section)
+            pil_image = Image.fromarray(cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR))  # Convertir a imagen PIL
+            qimage = ImageQt(pil_image)  # Convertir a QImage
+            pixmap = QPixmap.fromImage(qimage)
+            pixmap = pixmap.scaled(max_width, max_height, Qt.AspectRatioMode.KeepAspectRatio)
+            image_label.setPixmap(pixmap)
+            self.image_grid.addWidget(image_label, self.index_grid // 2, self.index_grid % 2)
+            self.index_grid += 1
+            print(self.index_grid)
 
         elif not self.disableBorderRecording:
             elapsed_seconds = self.detectionTime.secsTo(QTime.currentTime())
