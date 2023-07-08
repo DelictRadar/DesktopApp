@@ -1,6 +1,6 @@
 import sys
 import time
-from PyQt6.QtCore import Qt, QTimer, QDateTime
+from PyQt6.QtCore import Qt, QTimer, QDateTime, QTime
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
 import cv2
@@ -10,6 +10,9 @@ from PIL.ImageQt import ImageQt
 from multiprocessing import Process, Pipe
 import pickle
 from server import server
+import winsound
+
+output = None
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -22,6 +25,14 @@ class MainWindow(QMainWindow):
 
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
+
+        # Crear un objeto VideoWriter
+        self.fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec de compresión de video
+        self.fps = 20  # Cuadros por segundo del video
+
+        self.existDetection = True
+        self.disableBorderRecording = False
+        self.detectionTime = QTime.currentTime()
 
         main_layout = QHBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -56,7 +67,7 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_image)
-        self.timer.start(2)
+        self.timer.start(20)
 
         self.capture = cv2.VideoCapture(0)  # Inicializar captura de la cámara
 
@@ -68,17 +79,49 @@ class MainWindow(QMainWindow):
         self.server_process.start()
 
         self.show()
+    
+    def record_evidence(self, rgb_image):
+        global output
+        current_datetime = QDateTime.currentDateTime()
+        timestamp = current_datetime.toString("yyyyMMdd_HHmmss")
+        output_file = f"./videos/{timestamp}.mp4"
+        output = cv2.VideoWriter(output_file, self.fourcc, self.fps, (int(self.capture.get(3)), int(self.capture.get(4))))
+        output.write(rgb_image)
+
+    def alert_detection(self, rgb_image):
+        global output
+        # Pintar bordes rojos, grabar evidencia y alertar
+        if self.disableBorderRecording and self.existDetection:
+            self.image_label.setStyleSheet("background-color: #FFFFFF; border: 4px solid #EE1D23;")
+            self.detectionTime = QTime.currentTime()
+            self.disableBorderRecording = False
+            winsound.PlaySound('./assets/sounds/alert-1.wav', winsound.SND_ASYNC)
+            self.record_evidence(rgb_image)
+
+        elif not self.disableBorderRecording:
+            elapsed_seconds = self.detectionTime.secsTo(QTime.currentTime())
+            if output is not None:
+                output.write(rgb_image)
+            if elapsed_seconds >= 10:
+                self.disableBorderRecording = True
+                self.image_label.setStyleSheet("background-color: #FFFFFF;")
+                if output is not None:
+                    output.release()
+                    output = None
 
     def update_image(self):
+        global output
         ret, frame = self.capture.read()  # Leer un frame de la cámara
         if ret:
-            frame_time = time.time()
+            start_time = time.time()
             # Enviar la imagen capturada al servidor a través del PIPE
             self.client_pipe.send(pickle.dumps(frame))
 
             # Recibir la imagen resultante del servidor a través del PIPE
-            rgb_image = pickle.loads(self.client_pipe.recv())
-            end_time = time.time()
+            rgb_image, self.existDetection = pickle.loads(self.client_pipe.recv())
+
+            # Alertar detección
+            self.alert_detection(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
 
             pil_image = Image.fromarray(rgb_image)  # Convertir a imagen PIL
             qimage = ImageQt(pil_image)  # Convertir a QImage
@@ -90,7 +133,8 @@ class MainWindow(QMainWindow):
 
             current_datetime = QDateTime.currentDateTime().toString("hh:mm:ss - yyyy/MM/dd")
             self.datetime_label.setText(current_datetime)
-        print(end_time - frame_time)
+            end_time = time.time()
+            print(end_time - start_time)
 
     def toggle_panel(self):
         if self.panel_visible:
