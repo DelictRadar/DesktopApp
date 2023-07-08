@@ -48,6 +48,13 @@ class MainWindow(QMainWindow):
         self.image_label.setStyleSheet("background-color: #FFFFFF;")
         display_layout.addWidget(self.image_label)
 
+        self.cancel_button = QPushButton("Cancelar alerta", display_widget)
+        self.cancel_button.setStyleSheet("background-color: #3CC5A6; color: #FFFFFF; font-size: 16px;"
+                                         "border-radius: 5px; padding: 5px;")
+        self.cancel_button.clicked.connect(self.cancel_alert)
+        self.cancel_button.setVisible(False)  # Ocultar el botón inicialmente
+        display_layout.addWidget(self.cancel_button, alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight)
+
         self.datetime_label = QLabel(display_widget)
         self.datetime_label.setStyleSheet("color: #FFFFFF; font-size: 20px;")
         display_layout.addWidget(self.datetime_label)
@@ -79,6 +86,9 @@ class MainWindow(QMainWindow):
         self.server_process.start()
 
         self.show()
+
+    def cancel_alert(self):
+        winsound.PlaySound('./assets/sounds/nosound.wav', winsound.SND_PURGE + winsound.SND_ASYNC) 
     
     def record_evidence(self, rgb_image):
         global output
@@ -108,6 +118,9 @@ class MainWindow(QMainWindow):
                 if output is not None:
                     output.release()
                     output = None
+                self.cancel_button.setVisible(False)  # Ocultar el botón si han pasado los 10 segundos
+            else:
+                self.cancel_button.setVisible(True)  # Mostrar el botón si no han pasado los 10 segundos 
 
     def update_image(self):
         global output
