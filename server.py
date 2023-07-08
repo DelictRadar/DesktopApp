@@ -8,6 +8,9 @@ import random
 
 class ImageProcessor:
     def __init__(self, model_path):
+
+        self.existDetection = False
+
         providers = [
             ('CUDAExecutionProvider', {
                 'device_id': 0,
@@ -74,7 +77,12 @@ class ImageProcessor:
 
         #print(inf_end - inf_start)
 
+        self.existDetection = False
+
         ori_images = [img.copy()]
+
+        if len(output_data) > 0:
+            self.existDetection = True
 
         for i,(batch_id,x0,y0,x1,y1,cls_id,score) in enumerate(output_data):
             image = ori_images[int(batch_id)]
@@ -117,6 +125,6 @@ def server(pipe):
             output = processor.process_image(image)
 
             # Enviar el resultado de la inferencia a través de la tubería
-            pipe.send(pickle.dumps(output))
+            pipe.send(pickle.dumps([output, processor.existDetection]))
         except EOFError:
             break
